@@ -1,27 +1,19 @@
 import { type WebSocket } from "ws";
-import { Player } from "./Player";
 import { EventMessage } from "./types";
-import { buildWSMessage } from "./helpers";
+import { PlayerService } from "./services/Player.service";
+import { parseWSMessage } from "./helpers";
+
+const playerService = new PlayerService();
 
 export const connectionHandler = (ws: WebSocket) => {
-  let player: Player;
-
   ws.onmessage = (event) => {
-    const message = JSON.parse(event.data.toString()) as EventMessage;
+    const message = parseWSMessage(event.data) as EventMessage;
     const responseType = message.type;
-    const responseData = message.data;
+    const responseData = parseWSMessage(message.data);
 
     switch (responseType) {
       case "reg":
-        player = new Player(responseData.name, responseData.password);
-        ws.send(
-          buildWSMessage("reg", {
-            name: player.name,
-            index: player.id,
-            error: false,
-            errorText: "",
-          })
-        );
+        playerService.regUser(ws, responseData);
         break;
     }
   };
