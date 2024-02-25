@@ -3,8 +3,8 @@ export type RegData = {
   password: string;
 };
 
-type AddUserToRoomData = {
-  indexRoom: number;
+export type AddUserToRoomData = {
+  indexRoom: string;
 };
 
 export type EventType =
@@ -19,7 +19,7 @@ export type EventType =
   | "update_room"
   | "update_winners";
 
-type EventData = RegData | AddUserToRoomData;
+export type EventData = RegData | AddUserToRoomData;
 
 export type EventMessage = {
   type: EventType;

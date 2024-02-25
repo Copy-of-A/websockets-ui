@@ -7,4 +7,10 @@ export const buildWSMessage = (type: EventType, data: unknown) =>
     id: 0,
   });
 
-export const parseWSMessage = (data: unknown) => JSON.parse(String(data));
+export const parseWSMessage = (data: unknown) => {
+  try {
+    return JSON.parse(String(data));
+  } catch (error) {
+    console.error(error);
+  }
+};
