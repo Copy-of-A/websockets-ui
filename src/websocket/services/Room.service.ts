@@ -39,9 +39,7 @@ export class RoomService {
 
     currentRoom.addPlayer(currentPlayer);
 
-    this.createGameForUsersInRoom(this.availableRooms[roomIdx]);
-
-    this.removeRoomsWithPlayersBusyInCurrentRoom(currentRoom);
+    return currentRoom;
   }
 
   removeRoomsWithPlayersBusyInCurrentRoom(currentRoom: Room) {
@@ -51,16 +49,5 @@ export class RoomService {
         room.players[0].id !== currentRoom.players[1].id
     );
     this.availableRooms = filtered;
-  }
-
-  createGameForUsersInRoom(room: Room) {
-    room.players.forEach((player) => {
-      player.ws.send(
-        buildWSMessage("create_game", {
-          idGame: room.id,
-          idPlayer: player?.id,
-        })
-      );
-    });
   }
 }

@@ -3,10 +3,12 @@ import { EventMessage, RegData } from "./types";
 import { PlayerService } from "./services/Player.service";
 import { parseWSMessage, buildWSMessage } from "./helpers";
 import { RoomService } from "./services/Room.service";
-import { Player } from "./entities/Player";
+import { type Player } from "./entities/Player";
+import { GameService } from "./services/Game.service";
 
 const playerService = new PlayerService();
 const roomService = new RoomService();
+const gameService = new GameService();
 
 export const connectionHandler = (ws: WebSocket) => {
   let currentPlayer: Player;
@@ -45,13 +47,50 @@ export const connectionHandler = (ws: WebSocket) => {
         break;
 
       case "add_user_to_room":
-        roomService.addUserToRoom(responseData, currentPlayer);
+        const room = roomService.addUserToRoom(responseData, currentPlayer);
+
+        if (room) {
+          const game = gameService.createGame(room.players[0], room.players[1]);
+          room.players.forEach((player, index) => {
+            player.ws.send(
+              buildWSMessage("create_game", {
+                idGame: game.id,
+                idPlayer: game.players[index].playerIndexInGame,
+              })
+            );
+          });
+          roomService.removeRoomsWithPlayersBusyInCurrentRoom(room);
+        }
 
         playerService.players.forEach((user) =>
           user.ws.send(
             buildWSMessage("update_room", roomService.getAvailableRooms())
           )
         );
+        break;
+
+      case "add_ships":
+        const { gameId, ships, indexPlayer } = responseData;
+
+        const currentGame = gameService.games.find((game) => game.id == gameId);
+        if (!currentGame) return;
+
+        gameService.addShipsForPlayer(currentGame, indexPlayer, ships);
+
+        const opponent = currentGame.players.find(
+          (user) => user.playerIndexInGame !== indexPlayer
+        );
+
+        if (opponent && opponent.ships.length > 0) {
+          currentGame.players.forEach((gamePlayer) => {
+            gamePlayer.player.ws.send(
+              buildWSMessage("start_game", {
+                ships: gamePlayer.ships,
+                currentPlayerIndex: gamePlayer.playerIndexInGame,
+              })
+            );
+          });
+        }
         break;
     }
   };
