@@ -7,6 +7,22 @@ export type AddUserToRoomData = {
   indexRoom: string;
 };
 
+export type AttackData = {
+  gameId: string;
+  x: number;
+  y: number;
+  indexPlayer: string /* id of the player in the current game session */;
+};
+
+export type AttackResData = {
+  position: {
+    x: number;
+    y: number;
+  };
+  currentPlayer: string /* id of the player in the current game session */;
+  status: "miss" | "killed" | "shot";
+};
+
 export type AddShipsData = {
   gameId: string;
   ships: [

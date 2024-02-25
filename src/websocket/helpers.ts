@@ -8,6 +8,7 @@ export const buildWSMessage = (type: EventType, data: unknown) =>
   });
 
 export const parseWSMessage = (data: unknown) => {
+  if (data === "") return "";
   try {
     return JSON.parse(String(data));
   } catch (error) {

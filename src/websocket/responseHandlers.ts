@@ -2,7 +2,7 @@ import { Player } from "./entities/Player";
 import { GameService } from "./services/Game.service";
 import { PlayerService } from "./services/Player.service";
 import { RoomService } from "./services/Room.service";
-import { AddShipsData, AddUserToRoomData, RegData } from "./types";
+import { AddShipsData, AddUserToRoomData, AttackData, RegData } from "./types";
 import { buildWSMessage } from "./helpers";
 import { WebSocket } from "ws";
 
@@ -14,7 +14,7 @@ type Services = {
 
 export const regHandler = (
   responseData: RegData,
-  currentPlayer: Player,
+  _: unknown,
   services: Services,
   ws: WebSocket
 ) => {
@@ -31,7 +31,7 @@ export const regHandler = (
       })
     );
   } else {
-    currentPlayer = playerService.createPlayer(ws, name, password);
+    const currentPlayer = playerService.createPlayer(ws, name, password);
     currentPlayer.ws.send(
       buildWSMessage("reg", {
         name: currentPlayer.name,
@@ -41,13 +41,16 @@ export const regHandler = (
       })
     );
 
-    if (roomService.availableRooms.length < 1) return;
-    playerService.players.forEach((user) =>
-      user.ws.send(
-        buildWSMessage("update_room", roomService.getAvailableRooms())
-      )
-    );
+    return currentPlayer;
   }
+};
+
+export const updateRoomHandeler = (services: Services) => {
+  const { playerService, roomService } = services;
+
+  playerService.players.forEach((user) =>
+    user.ws.send(buildWSMessage("update_room", roomService.getAvailableRooms()))
+  );
 };
 
 export const createRoomHandler = (
@@ -55,13 +58,8 @@ export const createRoomHandler = (
   currentPlayer: Player,
   services: Services
 ) => {
-  const { playerService, roomService } = services;
+  const { roomService } = services;
   roomService.createRoomWithUser(currentPlayer);
-
-  if (roomService.availableRooms.length < 1) return;
-  playerService.players.forEach((user) =>
-    user.ws.send(buildWSMessage("update_room", roomService.getAvailableRooms()))
-  );
 };
 
 export const addUserToRoomHandler = (
@@ -69,7 +67,7 @@ export const addUserToRoomHandler = (
   currentPlayer: Player,
   services: Services
 ) => {
-  const { playerService, roomService, gameService } = services;
+  const { roomService, gameService } = services;
   const room = roomService.addUserToRoom(responseData, currentPlayer);
 
   if (room) {
@@ -84,10 +82,6 @@ export const addUserToRoomHandler = (
     });
     roomService.removeRoomsWithPlayersBusyInCurrentRoom(room);
   }
-
-  playerService.players.forEach((user) =>
-    user.ws.send(buildWSMessage("update_room", roomService.getAvailableRooms()))
-  );
 };
 
 export const addShipsHandler = (

@@ -10,11 +10,18 @@ import {
   addUserToRoomHandler,
   createRoomHandler,
   regHandler,
+  updateRoomHandeler,
 } from "./responseHandlers";
 
 const playerService = new PlayerService();
 const roomService = new RoomService();
 const gameService = new GameService();
+
+const services = {
+  playerService,
+  roomService,
+  gameService,
+};
 
 export const connectionHandler = (ws: WebSocket) => {
   let currentPlayer: Player;
@@ -25,40 +32,23 @@ export const connectionHandler = (ws: WebSocket) => {
 
     switch (responseType) {
       case "reg":
-        regHandler(
-          responseData,
-          currentPlayer,
-          {
-            playerService,
-            roomService,
-            gameService,
-          },
-          ws
-        );
+        const newPlayer = regHandler(responseData, {}, services, ws);
+        if (newPlayer) currentPlayer = newPlayer;
+        updateRoomHandeler(services);
         break;
 
       case "create_room":
-        createRoomHandler(responseData, currentPlayer, {
-          playerService,
-          roomService,
-          gameService,
-        });
+        createRoomHandler({}, currentPlayer, services);
+        updateRoomHandeler(services);
         break;
 
       case "add_user_to_room":
-        addUserToRoomHandler(responseData, currentPlayer, {
-          playerService,
-          roomService,
-          gameService,
-        });
+        addUserToRoomHandler(responseData, currentPlayer, services);
+        updateRoomHandeler(services);
         break;
 
       case "add_ships":
-        addShipsHandler(responseData, currentPlayer, {
-          playerService,
-          roomService,
-          gameService,
-        });
+        addShipsHandler(responseData, currentPlayer, services);
         break;
     }
   };
