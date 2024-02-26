@@ -55,5 +55,11 @@ export const connectionHandler = (ws: WebSocket) => {
 
   ws.onclose = () => {
     console.log("ws was closed");
+    if (currentPlayer) {
+      const idx = playerService.players.findIndex(
+        (player) => player.id === currentPlayer.id
+      );
+      if (idx) playerService.players.splice(idx, 1);
+    }
   };
 };
