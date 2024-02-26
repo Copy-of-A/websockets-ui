@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { Ship, ShipDTO } from "../types";
+import { Coordinate, Ship, ShipDTO } from "../types";
 import { Player } from "./Player";
 
 export type PlayerInGame = {
@@ -7,6 +7,7 @@ export type PlayerInGame = {
   player: Player;
   ships: Array<Ship>;
   shipsDTO: Array<ShipDTO>;
+  attackedFields: Array<Coordinate>;
 };
 
 export class Game {
@@ -21,16 +22,25 @@ export class Game {
       playerIndexInGame: uuidv4(),
       shipsDTO: [],
       ships: [],
+      attackedFields: [],
     };
     this.players[1] = {
       player: playerSecond,
       playerIndexInGame: uuidv4(),
       shipsDTO: [],
       ships: [],
+      attackedFields: [],
     };
   }
 
   attack(player: PlayerInGame, x: number, y: number) {
+    if (
+      player.attackedFields.find((attack) => attack.x === x && attack.y === y)
+    ) {
+      return;
+    }
+    player.attackedFields.push({ x, y });
+
     const shottedShip = player.ships.find(
       (ship) => x >= ship.x1 && x <= ship.x2 && y >= ship.y1 && y <= ship.y2
     );
@@ -54,7 +64,7 @@ export class Game {
     }
   }
 
-  getPositionsStatusesForKilledShip(shottedShip: Ship) {
+  getPositionsStatusesForKilledShip(player: PlayerInGame, shottedShip: Ship) {
     const missedPositions = [];
     for (let x = shottedShip.x1 - 1; x <= shottedShip.x2 + 1; x++) {
       for (let y = shottedShip.y1 - 1; y <= shottedShip.y2 + 1; y++) {
@@ -71,6 +81,10 @@ export class Game {
           position: { x, y },
           status: isShip ? "killed" : "miss",
         });
+
+        if (!isShip) {
+          player.attackedFields.push({ x, y });
+        }
       }
     }
 

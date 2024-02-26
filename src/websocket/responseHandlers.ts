@@ -134,9 +134,11 @@ export const attackHandler = (
 
   const shotResult = currentGame.attack(opponent, x, y);
 
+  if (!shotResult) return;
+
   if (shotResult.status === "killed") {
     const positionsStatusesForKilledShip =
-      currentGame.getPositionsStatusesForKilledShip(shotResult.ship);
+      currentGame.getPositionsStatusesForKilledShip(opponent, shotResult.ship);
 
     positionsStatusesForKilledShip.forEach((data) => {
       currentGame.players.forEach((playerInGame) =>
