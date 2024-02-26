@@ -120,7 +120,7 @@ export const addShipsHandler = (
 
 export const attackHandler = (
   responseData: AttackData,
-  currentPlayer: Player,
+  _: unknown,
   services: Services
 ) => {
   const { gameService } = services;
@@ -174,10 +174,12 @@ export const attackHandler = (
   }
 
   if (currentGame.checkAllShipsKilled(opponent)) {
-    currentPlayer.ws.send(
-      buildWSMessage("finish", {
-        winPlayer: indexPlayer,
-      })
+    currentGame.players.forEach((playerInGame) =>
+      playerInGame.player.ws.send(
+        buildWSMessage("finish", {
+          winPlayer: indexPlayer,
+        })
+      )
     );
   }
 };
