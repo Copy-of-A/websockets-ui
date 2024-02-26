@@ -60,7 +60,12 @@ export type EventMessage = {
   id: number;
 };
 
-export type Ship = {
+export type Coordinate = {
+  x: number;
+  y: number;
+};
+
+export type ShipDTO = {
   position: {
     x: number;
     y: number;
@@ -68,4 +73,13 @@ export type Ship = {
   direction: boolean;
   length: number;
   type: "small" | "medium" | "large" | "huge";
+};
+
+export type Ship = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  length: number;
+  shots: Array<Coordinate>;
 };

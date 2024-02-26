@@ -8,6 +8,7 @@ import { GameService } from "./services/Game.service";
 import {
   addShipsHandler,
   addUserToRoomHandler,
+  attackHandler,
   createRoomHandler,
   regHandler,
   updateRoomHandeler,
@@ -49,6 +50,10 @@ export const connectionHandler = (ws: WebSocket) => {
 
       case "add_ships":
         addShipsHandler(responseData, currentPlayer, services);
+        break;
+
+      case "attack":
+        attackHandler(responseData, currentPlayer, services);
         break;
     }
   };

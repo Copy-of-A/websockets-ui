@@ -105,10 +105,71 @@ export const addShipsHandler = (
     currentGame.players.forEach((gamePlayer) => {
       gamePlayer.player.ws.send(
         buildWSMessage("start_game", {
-          ships: gamePlayer.ships,
+          ships: gamePlayer.shipsDTO,
           currentPlayerIndex: gamePlayer.playerIndexInGame,
         })
       );
+      gamePlayer.player.ws.send(
+        buildWSMessage("turn", {
+          currentPlayer: indexPlayer,
+        })
+      );
     });
+  }
+};
+
+export const attackHandler = (
+  responseData: AttackData,
+  _: unknown,
+  services: Services
+) => {
+  const { gameService } = services;
+  const { gameId, x, y, indexPlayer } = responseData;
+
+  const currentGame = gameService.games.find((game) => game.id === gameId);
+  if (!currentGame) return;
+
+  const opponent = gameService.getOpponentFromGame(currentGame, indexPlayer);
+  if (!opponent) return;
+
+  const shotResult = currentGame.attack(opponent, x, y);
+
+  if (shotResult.status === "killed") {
+    const positionsStatusesForKilledShip =
+      currentGame.getPositionsStatusesForKilledShip(shotResult.ship);
+
+    positionsStatusesForKilledShip.forEach((data) => {
+      currentGame.players.forEach((playerInGame) =>
+        playerInGame.player.ws.send(
+          buildWSMessage("attack", {
+            ...data,
+            currentPlayer: indexPlayer,
+          })
+        )
+      );
+    });
+  } else {
+    currentGame.players.forEach((playerInGame) =>
+      playerInGame.player.ws.send(
+        buildWSMessage("attack", {
+          position: {
+            x,
+            y,
+          },
+          currentPlayer: indexPlayer,
+          status: shotResult.status,
+        })
+      )
+    );
+  }
+
+  if (["killed", "miss"].includes(shotResult.status)) {
+    currentGame.players.forEach((playerInGame) =>
+      playerInGame.player.ws.send(
+        buildWSMessage("turn", {
+          currentPlayer: opponent.playerIndexInGame,
+        })
+      )
+    );
   }
 };
