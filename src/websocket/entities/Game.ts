@@ -76,4 +76,8 @@ export class Game {
 
     return missedPositions;
   }
+
+  checkAllShipsKilled(player: PlayerInGame) {
+    return player.ships.every((ship) => ship.shots.length === ship.length);
+  }
 }
