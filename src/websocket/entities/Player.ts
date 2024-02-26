@@ -6,11 +6,13 @@ export class Player {
   name: string;
   password: string;
   id: string;
+  wins: number;
 
   constructor(ws: WebSocket, name: string, password: string) {
     this.ws = ws;
     this.name = name;
     this.password = password;
     this.id = uuidv4();
+    this.wins = 0;
   }
 }

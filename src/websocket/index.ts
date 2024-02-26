@@ -36,6 +36,7 @@ export const connectionHandler = (ws: WebSocket) => {
         const newPlayer = regHandler(responseData, {}, services, ws);
         if (newPlayer) currentPlayer = newPlayer;
         updateRoomHandeler(services);
+        playerService.updateWinnersForAllPlayers();
         break;
 
       case "create_room":
